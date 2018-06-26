@@ -24,6 +24,8 @@ terms | terms桶 |
 avg | 平均指标 | avg指标嵌套在terms桶中
 min | 最小指标 |
 max | 最大指标 |
+top_hits|  |
+collapse ||
 histogram | 柱状图桶 | 常规的histogram通常使用条形图来表示 
 interval | 区间指标 | 间隔为20000意味着我们能够拥有区间[0-19999, 20000-39999, 等]
 extended_stats |统计信息 指标| 包括[count、min、max、avg、sum、sum_of_squares、variance、std_deviation、std_deviation_bounds、upper、lower]
