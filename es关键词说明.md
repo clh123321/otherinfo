@@ -1,3 +1,6 @@
+
+### 0，
+> [增删改查，映射，结构化查询，聚合](https://blog.csdn.net/xj626852095/article/details/54343182)
 ### 1，请求关键词
 关键词 | 说明 | 备注
 ---|---|---
@@ -437,4 +440,32 @@ doc_count| 该词条的文档数量 |
 结果 
 ```
 
+```  
+### C#
+```
+			_elasticClient.Search<T>(s => s
+                .From(skip)
+                .Filter(fd => fd.Term(f => f.Language, language))
+                .Size(pageSize)
+                .SearchType(SearchType.Count)
+                .Query(
+                    q => q.Wildcard(f => f.Title, query, 2.0)
+                         || q.Wildcard(f => f.Description, query)
+                )
+                .Aggregations(agd =>
+                    agd.Terms("groupId", tagd => tagd
+                        .Field("groupId")
+                        .Size(0)
+                    .Aggregations(tagdaggs =>
+                        tagdaggs.TopHits("top_tag_hits", thagd => thagd
+                            .Size(1)))
+                    )
+                )
+                );
+
+                var groupIdAggregation = result.Aggs.Terms("groupId");
+
+                var topHits =
+                    groupIdAggregation.Items.Select(key => key.TopHits("top_tag_hits"))
+                        .SelectMany(topHitMetric => topHitMetric.Documents<ProductDocument>()).ToList();
 ```
