@@ -16,10 +16,21 @@ match | 查询 |查询是一个标准查询，不管你需要全文本查询还�
 multi_match | 查询 | 查询允许你做match查询的基础上同时搜索多个字段
 bool | 查询 | bool 查询与 bool过滤相似，用于合并多个查询子句。不同的是，bool过滤可以直接给出是否匹配成功， 而bool查询要计算每一个查询子句的_score（相关性分值）<br/>must::查询指定文档一定要被包含。<br/>must_not::查询指定文档一定不要被包含。<br/>should::查询指定文档，有则可以为文档相关性加分。
 filter | 过滤 |
-must_not  | |
-must_not  | |
+aggs\aggregations  | 聚合 [聚合搜索总结](https://my.oschina.net/LucasZhu/blog/1504396) |两个主要概念：<br/>Buckets(桶)：<br/>满足某个条件的文档集合。<br/>Metrics(指标)：<br/>为某个桶中的文档计算得到的统计信息。<br>每个聚合只是简单地由一个或者多个桶，零个或者多个指标组合而成<br> ~~SELECT COUNT(color) FROM table GROUP BY color~~<br>COUNT(color)就相当于指标。GROUP BY color则相当于桶
+terms | terms桶 |
+avg | 平均指标 | avg指标嵌套在terms桶中
+min | 最小指标 |
+max | 最大指标 |
+histogram | 柱状图桶 | 常规的histogram通常使用条形图来表示 
+interval | 区间指标 | 间隔为20000意味着我们能够拥有区间[0-19999, 20000-39999, 等]
+extended_stats |统计信息 指标| 包括[count、min、max、avg、sum、sum_of_squares、variance、std_deviation、std_deviation_bounds、upper、lower]
+date_histogram |日期柱状图桶|date_histogram倾向于被装换为线图(Line Graph)来表达时间序列(Time Series)
+format |  |
+min_doc_count | 强制返回空桶 |
+extended_bounds | 强制返回一整年的数据 |
 ### 2，结果关键词
 关键词 | 说明 | 备注
 ---|---|---
 hits | 返回结果集 |  跟size有关
 total | 起始页码 |默认为0
+doc_count| 该词条的文档数量 |
