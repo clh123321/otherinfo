@@ -15,7 +15,7 @@ match_all |查询 |match_all 可以查询到所有文档，是没有查询条件
 match | 查询 |查询是一个标准查询，不管你需要全文本查询还是精确查询基本上都要用到它
 multi_match | 查询 | 查询允许你做match查询的基础上同时搜索多个字段
 bool | 查询 | bool 查询与 bool过滤相似，用于合并多个查询子句。不同的是，bool过滤可以直接给出是否匹配成功， 而bool查询要计算每一个查询子句的_score（相关性分值）<br/>must::查询指定文档一定要被包含。<br/>must_not::查询指定文档一定不要被包含。<br/>should::查询指定文档，有则可以为文档相关性加分。
-filter | 过滤 |
+filter | 过滤 |         [过滤查询以及聚合](https://my.oschina.net/LucasZhu/blog/1504544)
 aggs\aggregations  | 聚合 [聚合搜索总结](https://my.oschina.net/LucasZhu/blog/1504396) |两个主要概念：<br/>Buckets(桶)：<br/>满足某个条件的文档集合。<br/>Metrics(指标)：<br/>为某个桶中的文档计算得到的统计信息。<br>每个聚合只是简单地由一个或者多个桶，零个或者多个指标组合而成<br> ~~SELECT COUNT(color) FROM table GROUP BY color~~<br>COUNT(color)就相当于指标。GROUP BY color则相当于桶
 terms | terms桶 |
 avg | 平均指标 | avg指标嵌套在terms桶中
@@ -28,6 +28,18 @@ date_histogram |日期柱状图桶|date_histogram倾向于被装换为线图(Lin
 format |  |
 min_doc_count | 强制返回空桶 |
 extended_bounds | 强制返回一整年的数据 |
+post_filter、term | 过滤器 (先查询再过滤)| 过滤器不影响评分，而评分计算让搜索变得复杂，而且需要CPU资源，因而尽量使用过滤器，而且过滤器容易被缓存，进一步提升查询的整体性能。
+filtered | 先过滤再查询，速度快 |
+post_filter、range|范围过滤器|范围操作符包含：<br/>gt :: 大于<br/>gte:: 大于等于<br/>lt :: 小于<br/>lte:: 小于等于
+exists|过滤器|过滤掉给定字段没有值的文档
+missing|过滤器|
+script|脚本过滤器|
+type|类型过滤器|
+limit|限定过滤器|
+ids|标识符过滤器|
+should、must|组合过滤器|
+post_filter|后置过滤器|
+aggs、filter|过滤桶(Filter Bucket)|
 ### 2，结果关键词
 关键词 | 说明 | 备注
 ---|---|---
