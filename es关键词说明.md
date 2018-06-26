@@ -46,3 +46,395 @@ aggs、filter|过滤桶(Filter Bucket)|
 hits | 返回结果集 |  跟size有关
 total | 起始页码 |默认为0
 doc_count| 该词条的文档数量 |
+### 3，请求样例
+##### 1，post_filter(先查询再过滤)
+请求
+```
+{
+    "query" : {
+        "match":{"color":"red"}
+    },
+    "post_filter":{
+    	"term":{"make":"honda"}
+    },
+    "aggs" : {
+        "single_avg_price": {
+            "avg" : { "field" : "price" } 
+        }
+    }
+}
+```
+结果 聚合查询调用的域是query的域，post_filter 过滤后的域
+```
+{
+    "took": 25,
+    "timed_out": false,
+    "_shards": {
+        "total": 5,
+        "successful": 5,
+        "failed": 0
+    },
+    "hits": {
+        "total": 3,
+        "max_score": 0.6931472,
+        "hits": [
+            {
+                "_index": "cars",
+                "_type": "transactions",
+                "_id": "AV27esc_P4ExfZbT0LYK",
+                "_score": 0.6931472,
+                "_source": {
+                    "price": 20000,
+                    "color": "red",
+                    "make": "honda",
+                    "sold": "2014-11-05"
+                }
+            },
+            {
+                "_index": "cars",
+                "_type": "transactions",
+                "_id": "AV27esc_P4ExfZbT0LYF",
+                "_score": 0.13353139,
+                "_source": {
+                    "price": 10000,
+                    "color": "red",
+                    "make": "honda",
+                    "sold": "2014-10-28"
+                }
+            },
+            {
+                "_index": "cars",
+                "_type": "transactions",
+                "_id": "AV27esc_P4ExfZbT0LYG",
+                "_score": 0.13353139,
+                "_source": {
+                    "price": 20000,
+                    "color": "red",
+                    "make": "honda",
+                    "sold": "2014-11-05"
+                }
+            }
+        ]
+    },
+    "aggregations": {
+        "single_avg_price": {
+            "value": 32500
+        }
+    }
+}
+```
+##### 2,先过滤再查询，速度快
+请求
+```
+{
+    "query": {
+        "bool": {
+            "must": {
+                "match": {
+                    "color": "red"
+                }
+            }, 
+            "filter": {
+                "term": {
+                    "make": "honda"
+                }
+            }
+        }
+    },
+    "aggs" : {
+        "single_avg_price": {
+            "avg" : { "field" : "price" } 
+        }
+    }
+}
+```
+结果 此bool中过滤器在聚合函数中可以生效。
+```
+
+```
+##### 3，范围过滤器
+请求
+```
+{
+   "post_filter":{
+         "range":{
+             "price":{
+                 "gte":10000,
+                 "lte":30000
+             }
+         }
+    }
+}
+```
+结果
+```
+{
+    "query": {
+        "bool": {
+            "must": {
+                "match": {
+                    "color": "red"
+                }
+            }, 
+            "filter": {
+                "range": {
+                    "price": {
+                    	"gte":10000,
+                    	"lte":30000
+                    }
+                }
+            }
+        }
+    },
+    "aggs" : {
+        "single_avg_price": {
+            "avg" : { "field" : "price" } 
+        }
+    }
+}
+```
+##### 4,exists过滤器
+请求 过滤掉给定字段没有值的文档
+```
+{
+   "post_filter":{
+         "exists":{
+             "field":"price"
+         }
+    }
+}
+```
+结果 
+```
+```
+##### 5，missing过滤器
+请求 过滤掉给定字段没有值的文档
+```
+{
+   "post_filter":{
+         "missing":{
+             "field":"year",
+             "null_value":0,
+             "existence":true
+         }
+    }
+}
+```
+结果 
+```
+```
+##### 5，脚本过滤器
+请求 过滤掉发表在一个世纪以前的书
+```
+{
+   "post_filter":{
+         "script":{
+             "script":"now - doc['year'].value > 100",
+             "params":{"now":2012}
+         }
+    }
+}
+```
+结果 
+```
+```
+##### 6，类型过滤器
+请求 当查询运行在多个索引上时，有用
+```
+{
+   "post_filter":{
+         "type":{
+             "value":"book"
+         }
+    }
+}
+```
+结果 
+```
+```
+##### 7，限定过滤器
+请求 限定每个分片返回的文档数
+```
+{
+   "post_filter":{
+         "limit":{
+             "value":1
+         }
+    }
+}
+```
+结果 
+```
+```
+##### 8，标识符过滤器
+请求 
+```
+{
+   "post_filter":{
+         "ids":{
+             "type":["book"],
+             "values":[1,2,3]
+         }
+    }
+}
+```
+结果 
+```
+```
+##### 9，组合过滤器
+请求 
+```
+{
+    "query": {
+        "bool": {
+            "must": {
+                "range": {
+                    "year": {
+                        "gte": 1930, 
+                        "lte": 1990
+                    }
+                }
+            }, 
+            "should": {
+                "term": {
+                    "available": true
+                }
+            }, 
+            "boost": 1
+        }
+    }
+}
+```
+结果 
+```
+```
+##### 10，filtered查询
+请求 
+```
+{
+    "query": {
+        "bool": {
+            "filter": {
+                "range": {
+                    "price":{
+                    	"gte":10000
+                    }
+                }
+            }
+        }
+    },
+    "aggs" : {
+        "single_avg_price": {
+            "avg" : { "field" : "price" } 
+        }
+    }
+}
+```
+结果 从本质上而言，使用filtered查询和使用match查询并无区别，正如我们在上一章所讨论的那样。该查询(包含了一个过滤器)返回文档的一个特定子集，然后聚合工作在该子集上。
+```
+```
+##### 11，过滤桶(Filter Bucket)
+请求 
+```
+{
+   "query":{
+      "match": {
+         "make": "ford"
+      }
+   },
+   "aggs":{
+      "recent_sales": {
+         "filter": { 
+            "range": {
+               "sold": {
+                  "from": "now-60M"
+               }
+            }
+         },
+         "aggs": {
+            "average_price":{
+               "avg": {
+                  "field": "price" 
+               }
+            }
+         }
+      }
+   }
+}
+```
+结果 
+```
+{
+    "took": 30,
+    "timed_out": false,
+    "_shards": {
+        "total": 5,
+        "successful": 5,
+        "failed": 0
+    },
+    "hits": {
+        "total": 2,
+        "max_score": 0.9808292,
+        "hits": [
+            {
+                "_index": "cars",
+                "_type": "transactions",
+                "_id": "AV2_X_JrP4ExfZbT0LYb",
+                "_score": 0.9808292,
+                "_source": {
+                    "price": 30000,
+                    "color": "green",
+                    "make": "ford",
+                    "sold": "2014-05-18"
+                }
+            },
+            {
+                "_index": "cars",
+                "_type": "transactions",
+                "_id": "AV2_X_JsP4ExfZbT0LYf",
+                "_score": 0.2876821,
+                "_source": {
+                    "price": 25000,
+                    "color": "blue",
+                    "make": "ford",
+                    "sold": "2014-02-12"
+                }
+            }
+        ]
+    },
+    "aggregations": {
+        "recent_sales": {
+            "doc_count": 2,
+            "average_price": {
+                "value": 27500
+            }
+        }
+    }
+}
+```
+##### 12，后置过滤器(Post Filter)
+请求  post_filter元素是一个顶层元素，只会对搜索结果进行过滤。
+```
+{
+    "query": {
+        "match": {
+            "make": "ford"
+        }
+    },
+    "post_filter": {    
+        "term" : {
+            "color" : "green"
+        }
+    },
+    "aggs" : {
+        "all_colors": {
+            "terms" : { "field" : "color" }
+        }
+    },
+    "size":0
+}
+```
+结果 
+```
+
+```
