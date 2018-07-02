@@ -5,6 +5,7 @@
 关键词 | 说明 | 备注
 ---|---|---
 size | 表示查询多少条文档 |size默认为10，[size 超过10000结果解决方法](https://blog.csdn.net/qq_18145031/article/details/53489370)，[size 深度分页的缺陷](https://note.youdao.com/)，[解决深分页](https://blog.csdn.net/feifantiyan/article/details/54096138)
+shard_size |规定了每个分片上返回的个数 |shard_size小于size，那么分片也会按照size指定的个数计算 （通过这两个参数，如果我们想要返回前5个，size=5;shard_size可以设置大于5，这样每个分片返回的词条信息就会增多，相应的误差几率也会减小）
 from | 表示从第几行开始 |默认为0
 scroll | 游标(url增加上一次请求_scroll_id) |[Scroll (游标)API详解](https://blog.csdn.net/xj626852095/article/details/50708213)，[数据遍历和深度分页](http://lxwei.github.io/posts/%E4%BD%BF%E7%94%A8scroll%E5%AE%9E%E7%8E%B0Elasticsearch%E6%95%B0%E6%8D%AE%E9%81%8D%E5%8E%86%E5%92%8C%E6%B7%B1%E5%BA%A6%E5%88%86%E9%A1%B5.html)
 order | 排序 |默认是按照doc_count倒序排列的， 可以改变默认情况 “order” : { “_count” : “asc” } 这是按照doc_count升序排列 “order” : { “_term” : “asc” } 这是按照字母表升序排列
@@ -24,14 +25,15 @@ terms | terms桶 |
 avg | 平均指标 | avg指标嵌套在terms桶中
 min | 最小指标 |
 max | 最大指标 |
-top_hits|  |
-collapse ||
+top_hits| 增加文档信息 |通常情况下，聚合只返回了统计的一些指标，当需要获取聚合后每组的文档信息（小区的名字和坐标等）时，该怎么处理呢？这时，使用 top_hits 子句就可以实现。(size 为组内返回的文档个数，sort 表示组内文档的排序规则，_source 指定组内文档返回的字段)
+collapse |字段折叠|字段折叠就是特定字段进行合并并去重，然后返回结果集，该功也能实现 agg top_hits 的聚合效果 [Elasticsearch检索 — 聚合和LBS](https://www.cnblogs.com/fanhaobai/p/7435073.html)
 histogram | 柱状图桶 | 常规的histogram通常使用条形图来表示 
 interval | 区间指标 | 间隔为20000意味着我们能够拥有区间[0-19999, 20000-39999, 等]
 extended_stats |统计信息 指标| 包括[count、min、max、avg、sum、sum_of_squares、variance、std_deviation、std_deviation_bounds、upper、lower]
 date_histogram |日期柱状图桶|date_histogram倾向于被装换为线图(Line Graph)来表达时间序列(Time Series)
 format |  |
-min_doc_count | 强制返回空桶 |
+min_doc_count | 强制返回空桶 |规定了最终结果的筛选 [Elasticsearch聚合 之 Terms](http://www.cnblogs.com/xing901022/p/4947436.html)
+shard_min_doc_count | 规定最小的文档数目 |规定了分片中计算返回时的筛选
 extended_bounds | 强制返回一整年的数据 |
 post_filter、term | 过滤器 (先查询再过滤)| 过滤器不影响评分，而评分计算让搜索变得复杂，而且需要CPU资源，因而尽量使用过滤器，而且过滤器容易被缓存，进一步提升查询的整体性能。
 filtered | 先过滤再查询，速度快 |
